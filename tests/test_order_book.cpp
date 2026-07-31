@@ -49,3 +49,19 @@ TEST_CASE("TestCancelWithUnknownOrderIdFails") {
     REQUIRE(result.reject.has_value());
     CHECK(result.reject->reason == RejectReason::UnknownId);
 }
+
+TEST_CASE("TestAddExecutesAggresiveMatch") {
+    OrderBook book;
+
+    book.add({"b1", Side::Buy, 1000, 2});
+    auto result = book.add({"s1", Side::Sell, 1000, 2});
+
+    CHECK_FALSE(result.reject.has_value());
+    REQUIRE(result.trades.size() == 1);
+    CHECK(result.trades[0] == Trade{"s1", "b1", 1000, 2});
+    CHECK_FALSE(book.best_bid().has_value());
+    CHECK_FALSE(book.best_ask().has_value());
+    // Check cancels reject now
+    CHECK(book.cancel("b1").reject.has_value());
+    CHECK(book.cancel("s1").reject.has_value());
+}

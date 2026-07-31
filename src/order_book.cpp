@@ -2,19 +2,26 @@
 #include <cassert>
 #include <numeric>
 #include <optional>
+#include <vector>
 
 AddResult OrderBook::add(Order order) {
     if (index_.contains(order.id)) {
         return AddResult{{}, Reject{order.id, RejectReason::DuplicatedId}};
     }
 
+    std::vector<Trade> trades;
+
     if (order.side == Side::Buy) {
-        insert_resting(bids_, std::move(order));
+        trades = match(asks_, order, [&](Price p) { return p <= order.price; });
+        if (order.quantity > 0)
+            insert_resting(bids_, std::move(order));
     } else {
-        insert_resting(asks_, std::move(order));
+        trades = match(bids_, order, [&](Price p) { return p >= order.price; });
+        if (order.quantity > 0)
+            insert_resting(asks_, std::move(order));
     }
 
-    return {{}, std::nullopt};
+    return {trades, std::nullopt};
 }
 
 CancelResult OrderBook::cancel(const OrderId& id) {

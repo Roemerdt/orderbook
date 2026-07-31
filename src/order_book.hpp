@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <cstdint>
 #include <functional>
 #include <list>
@@ -97,5 +99,35 @@ private:
         assert(level != side_map.end() && "index-book desynced: level missing for order");
         level->second.erase(it);
         if (level->second.empty()) side_map.erase(level);
+    }
+
+    template <class BookSide>
+    std::vector<Trade> match(BookSide &opposite, Order &order,
+                             std::predicate<Price> auto crosses) {
+        std::vector<Trade> trades;
+        while (order.quantity > 0 && !opposite.empty() &&
+               crosses(opposite.begin()->first)) {
+            LevelQueue &best_level = opposite.begin()->second;
+            Order &resting = best_level.front();
+
+            Quantity min_fill = std::min(order.quantity, resting.quantity);
+
+            order.quantity -= min_fill;
+            resting.quantity -= min_fill;
+
+            trades.push_back(
+                Trade{order.id, resting.id, resting.price, min_fill});
+
+            if (resting.quantity == 0) {
+                index_.erase(resting.id);
+                best_level.pop_front();
+            }
+
+            if (best_level.empty()) {
+                opposite.erase(opposite.begin());
+            }
+        }
+
+        return trades;
     }
 };
