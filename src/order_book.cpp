@@ -21,7 +21,7 @@ AddResult OrderBook::add(Order order) {
             insert_resting(asks_, std::move(order));
     }
 
-    return {trades, std::nullopt};
+    return {std::move(trades), std::nullopt};
 }
 
 CancelResult OrderBook::cancel(const OrderId &id) {
