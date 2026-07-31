@@ -3,3 +3,4 @@
 .zed/
 build/
 testcases.txt
+compile_commands.json
