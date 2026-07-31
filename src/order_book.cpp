@@ -24,7 +24,7 @@ AddResult OrderBook::add(Order order) {
     return {trades, std::nullopt};
 }
 
-CancelResult OrderBook::cancel(const OrderId& id) {
+CancelResult OrderBook::cancel(const OrderId &id) {
     auto location = index_.find(id);
     if (location == index_.end()) {
         return {Reject{id, RejectReason::UnknownId}};
@@ -45,19 +45,23 @@ CancelResult OrderBook::cancel(const OrderId& id) {
 }
 
 std::optional<Level> OrderBook::best_bid() const {
-    if (bids_.empty()) return std::nullopt;
+    if (bids_.empty())
+        return std::nullopt;
 
-    const auto& [price, queue] = *bids_.begin();
-    Quantity total = std::accumulate(queue.begin(), queue.end(), Quantity{0},
-        [](Quantity acc, const Order& o) { return acc + o.quantity; });
+    const auto &[price, queue] = *bids_.begin();
+    Quantity total = std::accumulate(
+        queue.begin(), queue.end(), Quantity{0},
+        [](Quantity acc, const Order &o) { return acc + o.quantity; });
     return Level{price, total};
 }
 
 std::optional<Level> OrderBook::best_ask() const {
-    if (asks_.empty()) return std::nullopt;
+    if (asks_.empty())
+        return std::nullopt;
 
-    const auto& [price, queue] = *asks_.begin();
-    Quantity total = std::accumulate(queue.begin(), queue.end(), Quantity{0},
-        [](Quantity acc, const Order& o) { return acc + o.quantity; });
+    const auto &[price, queue] = *asks_.begin();
+    Quantity total = std::accumulate(
+        queue.begin(), queue.end(), Quantity{0},
+        [](Quantity acc, const Order &o) { return acc + o.quantity; });
     return Level{price, total};
 }

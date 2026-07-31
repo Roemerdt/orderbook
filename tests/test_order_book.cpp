@@ -1,5 +1,5 @@
-#include <catch2/catch_test_macros.hpp>
 #include "order_book.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("TestNewBookHasNoBidNorAsk") {
     OrderBook book;
